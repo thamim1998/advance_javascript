@@ -7,9 +7,8 @@ const saltRounds = 10;
 const UserModel = require('../models/user');
 const Session = require('../models/session');
 const user = require('../models/user');
-const authUtil = require("../utils/auth")
+const authToken = require("../token/auth")
 
-// const { generateAccessToken, generateRefreshToken } = require('../tools');
 
 Router.post('/register', async (request, response) => {
     const { email, email_cfg, password, password_cfg, username, active } = request.body;
@@ -53,17 +52,9 @@ Router.post('/login', async (request, response) => {
             let verif = await bcrypt.compare(password, user.password);
 
             if (verif) {
-                // request.session.user = user;
-
-                // const accessToken = generateAccessToken(user._id)
-                // const refeshToken = generateRefreshToken(user._id)
-                const token = await authUtil.generateToken(user._id, email);
-                const refreshToken = await authUtil.generateRefreshToken(user._id, email);
-
-                // response.cookie('refreshtoken', refeshToken, {
-                //     httpOnly: true,
-                //     maxAge: 30*24*60*60*1000
-                // });
+               
+                const token = await authToken.generateToken(user._id, email);
+                const refreshToken = await authToken.generateRefreshToken(user._id, email);
 
                 try {
                     await Session.create({ userId: user._id, accessToken: token, refreshToken })
@@ -110,7 +101,7 @@ Router.get('/refresh-token', async (request, response) => {
 
         if (!user) return response.status(503).json({ msg: "Not authenticated !" })
 
-        const token = await authUtil.generateToken(user._id, email);
+        const token = await authToken.generateToken(user._id, email);
 
 
         return response.status(200).json({
@@ -118,7 +109,7 @@ Router.get('/refresh-token', async (request, response) => {
             user
         })
     } catch (error) {
-        return response.status(503).json({ "msg": "Not authenticated !" });
+        return response.status(503).json({ "msg": "User not authenticated !" });
     }
 });
 

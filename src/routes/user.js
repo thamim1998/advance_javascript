@@ -3,8 +3,8 @@ const bcrypt = require('bcrypt');
 
 const Router = express.Router();
 const userController = require("../controllers/user")
-const authUtils = require("../utils/auth")
-const {authenticate} = authUtils
+const authToken = require("../token/auth")
+const {authenticate} = authToken
 
 Router.post("/",userController.createUser)
 Router.get("/:id",authenticate,userController.getUserById)

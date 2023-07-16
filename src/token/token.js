@@ -1,7 +1,3 @@
-
-// const privateKey  = fs.readFileSync('../config/private.key', 'utf8');
-// const fs   = require('fs');
-// const publicKey  = fs.readFileSync('./public.key', 'utf8');
 require('dotenv').config()
 const User = require("../models/user");
 const jwt = require('jsonwebtoken');
@@ -29,7 +25,7 @@ const authenticate = async (req, res, next) => {
 
 const generateToken = async (userId, email) => {
     console.log(process.env.PUBLIC_KEY);
-    const token = jwt.sign({ userId, email }, process.env.PUBLIC_KEY, { expiresIn: '24h' });
+    const token = jwt.sign({ userId, email }, process.env.PUBLIC_KEY, { expiresIn: '10h' });
 
     return token;
 
@@ -37,7 +33,7 @@ const generateToken = async (userId, email) => {
 }
 const generateRefreshToken = async (userId, email) => {
     console.log(process.env.PUBLIC_KEY);
-    const token = jwt.sign({ userId, email }, process.env.PUBLIC_KEY, { expiresIn: '30d' });
+    const token = jwt.sign({ userId, email }, process.env.PUBLIC_KEY, { expiresIn: '20d' });
 
     return token;
 

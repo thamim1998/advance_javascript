@@ -2,158 +2,126 @@ const Game = require("../models/game");
 const Word = require("../models/word");
 const Try = require("../models/try");
 
-const createGame = async (req, resp) => {
-    try {
-        const word = await Word.aggregate([{
-            $sample: { size: 1 }
-        }]);
+const createGame = async (req, res) => {
+  try {
+    const word = await Word.aggregate([
+      {
+        $sample: { size: 1 },
+      },
+    ]);
 
-        let game = new Game({
-            word: word[0]._id,
-            tries: [],
-            user: req.user._id
-        });
+    let game = new Game({
+      word: word[0]._id,
+      tries: [],
+      user: req.user._id,
+    });
 
-        await game.save();
-        game = await Game.findOne({
-            _id: game._id
-        }).populate('user').populate('word')
+    await game.save();
+    game = await Game.findOne({
+      _id: game._id,
+    })
+      .populate("user")
+      .populate("word");
 
-        return resp.status(200).json({
-            "msg": game
-        });
-
-    } catch (error) {
-        return resp.status(500).json({
-            "error": error.message
-        });
-    }
-}
-
-const getAllGames = async (request, resp) => {
-    try {
-        const gameList = await Game.find().populate("word tries");
-        return resp.status(200).json({
-            "data": gameList || [],
-            "message": "Games Found"
-        });
-    } catch (error) {
-        return resp.status(500).json({
-            "error": error.message
-        });
-    }
-}
-
-const getGameById = async (request, resp) => {
-    try {
-        const id = request.params.id;
-        const gameObject = await Game.findOne({ _id: id }).populate("word tries");
-
-        if (!gameObject) {
-            return resp.status(200).json({
-                "data": undefined,
-                "message": "Game Does Not Exist"
-
-            });
-        }
-        return resp.status(200).json({
-            "data": gameObject,
-            "message": "Game Found"
-
-        });
-
-    } catch (error) {
-        return resp.status(500).json({
-            "error": error.message
-        });
-    }
-}
-
-
-const compareWords = (word, userWord) => {
-    let response = '';
-
-    for (let i = 0; i < word.length; i++) {
-        if (word[i] === userWord[i]) {
-            response += '1';
-        } else if (word.includes(userWord[i])) {
-            response += '0';
-        } else {
-            response += 'x';
-        }
-    }
-
-    return response;
+    return res.status(200).json({
+      msg: game,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: error.message,
+    });
+  }
 };
 
+const getAllGames = async (request, res) => {
+  try {
+    const gameList = await Game.find().populate("word tries");
+    return res.status(200).json({
+      data: gameList || [],
+      message: "Game is succesfully found",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: error.message,
+    });
+  }
+};
 
-const verifyGame = async (req, resp) => {
-    try {
-        const { word, gameId } = req.body;
-        const gameObject = await Game.findOne({ _id: gameId }).populate("word tries");
-        if (typeof word === 'undefined') {
-            return resp.status(500).json({
-                "msg": "You have to send 'word' value"
-            });
-        }
-        if (!gameObject) {
-            return resp.status(200).json({
-                "data": undefined,
-                "message": "Game Does Not Exist"
+const getGameById = async (request, res) => {
+  try {
+    const id = request.params.id;
+    const gameData = await Game.findOne({ _id: id }).populate("word tries");
 
-            });
-        }
-        if (gameObject.word && gameObject.word.name) {
-            let wordString = compareWords(gameObject.word.name, word)
-            let tryAttempt = Try({
-                word,
-                result: wordString
-            })
-            tryAttempt = await tryAttempt.save()
-            gameObject.tries = [...gameObject.tries, tryAttempt._id];
-            await Game.updateOne({ _id: gameId }, { tries: gameObject.tries })
-            console.log(gameObject.tries);
-            return resp.status(200).json({
-                "data": wordString,
-                "message": "Here is your result"
-
-            });
-        }
-
-        return resp.status(500).json({
-            "result": "You don't find the word !"
-        });
-
-
-    } catch (error) {
-        console.log(error);
-        return resp.status(500).json({
-            "error": error.message
-        });
+    if (!gameData) {
+      return res.status(200).json({
+        data: undefined,
+        message: "Match doesnt found",
+      });
     }
-}
+    return res.status(200).json({
+      data: gameData,
+      message: "A game match successfully found",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: error.message,
+    });
+  }
+};
 
-// ge the value searched by getting the game
+const matchWords = (word, userWord) => {
+  let resonse = "";
 
-// make the verification
+  for (let i = 0; i < word.length; i++) {
+    if (word[i] === userWord[i]) {
+      resonse += "1";
+    } else if (word.includes(userWord[i])) {
+      resonse += "0";
+    } else {
+      resonse += "x";
+    }
+  }
 
-// send the result
-// const userWord = req.body.word;
-// if (typeof userWord === 'undefined') {
-//     return response.status(500).json({
-//         "msg": "You have to send 'word' value"
-//     });
-// }
+  return resonse;
+};
 
+const matchGame = async (req, res) => {
+  try {
+    const { word, gameId } = req.body;
+    const gameData = await Game.findOne({ _id: gameId }).populate("word tries");
+    if (typeof word === "undefined") {
+      return res.status(500)
+    }
+    if (!gameData) {
+      return res.status(200)
+    }
+    if (gameData.word && gameData.word.name) {
+      let dataString = matchWords(gameData.word.name, word);
+      let tryAttempt = Try({
+        word,
+        result: dataString,
+      });
+      tryAttempt = await tryAttempt.save();
+      gameData.tries = [...gameData.tries, tryAttempt._id];
+      await Game.updateOne({ _id: gameId }, { tries: gameData.tries });
+      console.log(gameData.tries);
+      return res.status(200)
+    }
 
+    return res.status(500).json({
+      result: "You are unable to find the word",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      error: error.message,
+    });
+  }
+};
 
-
-// return response.status(500).json({
-//     "result": "You don't find the word !"
-// });
 module.exports = {
-    createGame,
-    getAllGames,
-    getGameById,
-    verifyGame
-}
+  createGame,
+  getAllGames,
+  getGameById,
+  matchGame,
+};
