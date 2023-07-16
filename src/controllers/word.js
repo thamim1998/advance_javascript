@@ -32,9 +32,7 @@ const createWord = async (request, res) => {
 const getAllWords = async (request, res) => {
   try {
     const list = await Word.find();
-    return res.status(200).json({
-      data: list || []
-    });
+    return res.send(list);
   } catch (error) {
     return res.status(500).json({
       error: error.message,
