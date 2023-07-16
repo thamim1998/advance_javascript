@@ -21,7 +21,7 @@ const createWord = async (request, response) => {
         }
 
         const word = new Word({
-           name
+            name
         });
 
         await word.save();
@@ -101,10 +101,27 @@ const updateWord = async (request, response) => {
         });
     }
 }
+const deleteWord = async (req, resp) => {
+    try {
+        const { id } = req.params;
+        console.log(id);
+        await Word.deleteOne({ _id: id });
+        return resp.status(200).json({
+            "data": id,
+            "message": "Word deleted"
+
+        });
+
+    } catch (error) {
+        return resp.status(500).json({
+            "error": error.message
+        });
+    }
+}
 module.exports = {
     createWord,
     getAllWords,
     getWordById,
-    updateWord
+    updateWord,deleteWord
 }
 

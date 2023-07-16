@@ -5,10 +5,10 @@ const Router = express.Router();
 const userController = require("../controllers/user")
 const authUtils = require("../utils/auth")
 const {authenticate} = authUtils
+
 Router.post("/",userController.createUser)
 Router.get("/:id",authenticate,userController.getUserById)
 Router.put("/",authenticate,userController.updateUser)
 Router.get("/",authenticate,userController.getUsers)
-// Router.get("/",userController.getUser)
 
 module.exports = Router;
