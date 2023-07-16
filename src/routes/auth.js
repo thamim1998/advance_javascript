@@ -58,7 +58,7 @@ Router.post('/login', async (request, response) => {
                 // const accessToken = generateAccessToken(user._id)
                 // const refeshToken = generateRefreshToken(user._id)
                 const token = await authUtil.generateToken(user._id, email);
-                const refreshToken = await authUtil.generateToken(user._id, email);
+                const refreshToken = await authUtil.generateRefreshToken(user._id, email);
 
                 // response.cookie('refreshtoken', refeshToken, {
                 //     httpOnly: true,

@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-
+const Try = require("../models/try");
 const gameSchema = new mongoose.Schema({
     word: {
         type: mongoose.Schema.Types.ObjectId, 
